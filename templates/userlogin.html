@@ -1,0 +1,110 @@
+{% load crispy_forms_tags %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> Login Page </title>
+    <style>
+        Body {
+            font-family: Calibri, Helvetica, sans-serif;
+            background-color: rgb(207, 203, 203);
+        }
+
+        button {
+            background-color: #4CAF50;
+            width: 100%;
+            color: orange;
+            padding: 15px;
+            margin: 10px 0px;
+            border: none;
+            cursor: pointer;
+        }
+
+        form {
+            border: 3px solid #f1f1f1;
+        }
+
+        input[type=email],
+        input[type=password] {
+            width: 100%;
+            margin: 8px 0;
+            padding: 12px 20px;
+            display: inline-block;
+            border: 2px solid green;
+            box-sizing: border-box;
+        }
+
+        button:hover {
+            opacity: 0.7;
+        }
+
+        .cancelbtn {
+            width: auto;
+            padding: 10px 18px;
+            margin: 10px 5px;
+        }
+
+
+        .container {
+            padding: 25px;
+            background-color: lightblue;
+        }
+    </style>
+</head>
+
+<body>
+    <center>
+        <h1> User Login Form </h1>
+    </center>
+    <form action="{% url 'user:useradd' %}" method="POST" novalidate>
+        {% csrf_token %}
+        <div class="container">
+            {{form|crispy}}
+            <button type="submit">Login</button>
+            <input type="checkbox" checked="checked"> Remember me
+            <a href="{% url 'account:sign_up' %}" class="btn btn-info">Don't have an account?</a>
+            Forgot <a href="{% url 'account:password_reset' %}"> password? </a>
+        </div>
+    </form>
+</body>
+
+</html>
+
+
+
+
+<!-- <form action="" method="post" novalidate>
+    {% csrf_token %}
+    {{form|crispy}}
+
+    <a href="{% url 'account:sign_up' %}" class="btn btn-info">Don't have an account?</a>
+    <a href="{% url 'account:login' %}" input type="submit" value="Login">
+</form>
+</body>
+
+</html> -->
+
+
+
+
+
+
+<!-- <div class="wrapper">
+    <form class="login" action="" method="POST" novalidate>
+        {% csrf_token %}
+        <p class="title">Log in</p>
+        <label for="id_username">Username</label>
+        <input type="input" placeholder="Username" autofocus />
+        <i class="fa fa-user"></i>
+        <label for="id_password">Password</label>
+        <input type="password" placeholder="Password" />
+        <i class="fa fa-key"></i>
+        <a href="{% url 'account:sign_up' %}" class="btn btn-info">Don't have an account?</a>
+        <button>
+            <i class="spinner"></i>
+            <span class="state">Log in</span>
+        </button>
+    </form>
+    </p>
+</div> -->

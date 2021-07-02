@@ -14,11 +14,11 @@ class UserForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your name'}),
             'address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your address'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Enter your email'}),
-            'password': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter your password'}),
+            'password': forms.PasswordInput(render_value=True, attrs={'class': 'form-control', 'placeholder': 'Enter your password'}),
         }
 
     def clean_password(self):
-        passw = self.cleaned_data['password']
-        if len(passw) < 6:
+        password = self.cleaned_data['password']
+        if len(password) < 6:
             raise forms.ValidationError('Enter more than or equal 6 character')
-        return passw
+        return password

@@ -30,12 +30,13 @@ def useradd(request):
     return render(request, 'useradd.html', {'form': form})
 
 
-@login_required(login_url="login")
+@login_required(login_url="/")
 def userread(request):
     user = User.objects.all()
     return render(request, 'userread.html', {'user': user})
 
 
+@login_required(login_url="/")
 def user_update(request, id):
     if request.method == 'POST':
         updt = User.objects.get(pk=id)
@@ -51,6 +52,7 @@ def user_update(request, id):
     return render(request, 'userupdate.html', {'form': form})
 
 
+@login_required(login_url="/")
 def user_delete(request, id):
     if request.method == 'POST':
         delt = User.objects.get(pk=id)

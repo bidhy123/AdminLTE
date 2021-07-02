@@ -36,9 +36,11 @@
       <li class="nav-item d-none d-sm-inline-block">
         <a href="#" class="nav-link">Contact</a>
       </li>
+      <!-- {% if user.is_authenticated %} -->
       <li class="nav-item d-none d-sm-inline-block">
         <a href="{% url 'account:login' %}" class="nav-link">LogOut</a>
       </li>
+      <!-- {% endif %} -->
     </ul>
   </nav>
   <!-- Main Sidebar Container -->

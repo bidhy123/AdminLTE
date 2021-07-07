@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, full_name=None, address=None, password=None, is_active=True, is_staff=False, is_admin=False):
+    def create_user(self, email, password=None):
         if not email:
             raise ValueError('Users must have an email address')
         if not password:
@@ -17,33 +17,26 @@ class UserManager(BaseUserManager):
 
         user_obj = self.model(email=self.normalize_email(email))
         user_obj.password = password
-        user_obj.full_name = full_name
-        user_obj.address = address
-        user_obj.staff = is_staff
-        user_obj.admin = is_admin
-        user_obj.active = is_active
         user_obj.save(using=self._db)
         return user_obj
 
     def create_staffuser(self, email, full_name=None, address=None, password=None):
         user = self.create_user(
             email,
-            full_name=full_name,
-            address=address,
             password=password,
-            is_staff=True,
         )
+        user.staff = True
+        user.save(using=self._db)
         return user
 
     def create_superuser(self, email, full_name=None, address=None, password=None):
         user = self.create_user(
             email,
-            full_name=full_name,
-            address=address,
             password=password,
-            is_staff=True,
-            is_admin=True
         )
+        user.staff = True
+        user.admin = True
+        user.save(using=self._db)
         return user
 
 
@@ -57,17 +50,17 @@ class User(AbstractBaseUser):
     admin = models.BooleanField(default=True)  # super user
     timestamp = models.DateTimeField(auto_now_add=True)
 
-    objects = UserManager()
-
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['full_name', 'address']
+    REQUIRED_FIELDS = []
+
+    objects = UserManager()
 
     update_password = True
 
-    def save(self, *args, **kwargs):
-        if self.admin != "True" and self.update_password:
-            self.set_password(self.password)
-        super(User, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if self.admin != "True" and self.update_password:
+    #         self.set_password(self.password)
+    #     super(User, self).save(*args, **kwargs)
 
     def get_full_name(self):
         if self.full_name:

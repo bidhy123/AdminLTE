@@ -57,7 +57,7 @@
     <center>
         <h1> User Login Form </h1>
     </center>
-    <form action="" method="POST" novalidate>
+    <form action="{% url 'account:login'%}" method="post">
         {% csrf_token %}
         <div class="container">
             {{form|crispy}}

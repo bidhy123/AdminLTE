@@ -24,10 +24,12 @@ SECRET_KEY = 'django-insecure-)bn@q8v08c)%%^d66f&g^#0w^x@+q$_$69l-vi6x3y*(&*ye6z
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # development only
 
 ALLOWED_HOSTS = []
+
+
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # development only
 
 
 # Application definition
@@ -39,11 +41,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'verify_email.apps.VerifyEmailConfig',
     'product',
     'user',
     'category',
     'account',
-    'crispy_forms'
+    'crispy_forms',
 ]
 
 AUTH_USER_MODEL = 'account.User'
@@ -110,17 +113,19 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/3.2/topics/i18n/
+# https://docs.django project.com/en/3.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "Asia/Kathmandu"
 
 USE_I18N = True
 
 USE_L10N = True
 
 USE_TZ = True
+
+# EMAIL CONFIG
 
 
 # Static files (CSS, JavaScript, Images)
@@ -136,9 +141,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'assets')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-LOGIN_URL = '/'
+LOGIN_URL = "../accounts/login/"
 
-EMAIL_BACKEND = 'django.core.'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USER_TLS = True

@@ -1,52 +1,103 @@
-from django.contrib.auth import authenticate, login, logout
-
-from django.contrib.auth import forms
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.http import request
-from django.views.generic import FormView
+from django.urls import reverse
 from django.shortcuts import render, HttpResponseRedirect, redirect
-from .forms import SignUpForm, LoginForm
+from .forms import SignUpForm
 from django.contrib import messages
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import EmailMessage
 #
 from .models import User
 from django.template.loader import render_to_string
 from django.contrib.auth.forms import PasswordResetForm, AuthenticationForm
 from django.db.models.query_utils import Q
-from django.utils.http import urlsafe_base64_encode
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.encoding import force_bytes
-
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str, force_text, DjangoUnicodeDecodeError
+from .utils import generate_token
+from django.conf import settings
+UserModel = get_user_model()
 
 # Create your views here.
 
 
+def send_activation_email(user, request):
+    current_site = get_current_site(request)
+    email_subject = 'Activate your account.'
+    email_body = render_to_string(
+        "activate.html",
+        {
+            "user": user,
+            "domain": current_site,
+            "uid": urlsafe_base64_encode(force_bytes(user.id)),
+            "token": generate_token.make_token(user),
+        },)
+    email = EmailMessage(subject=email_subject, body=email_body,
+                         from_email=settings.EMAIL_FROM_USER,
+                         to=[user.email],
+                         )
+    email.send()
+
+
 def sign_up(request):
     if request.method == 'POST':
-        form = SignUpForm(request.POST or None)
+        print(request.POST)
+        print("<><>><<>")
+        form = SignUpForm(request.POST)
         if form.is_valid():
+            password = form.cleaned_data["password1"]
+            user = form.save(commit=False)
+            user.set_password(password)
+            user.staff = True
+            # user_added.is_active = True
+            user.save()
+            send_activation_email(user, request)
             messages.success(request, 'Your Account Created Successfully.')
-            form.save()
+            return redirect('/')
+        else:
+            messages.error(request, "registration failed, try again.")
+            return redirect('/sign_up')
     else:
         form = SignUpForm()
     return render(request, 'signup.html', {'form': form})
 
 
-# class LoginView(FormView):
-#     form_class = LoginForm
-#     success_url = '/user'
-#     template_name = "userlogin.html"
+def activate(request, uidb64, token):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except Exception as e:
+        print(e)
+        user = None
+    if user and generate_token.check_token(user, token):
+        user.is_email_verified = True
+        user.save()
+        messages.add_message(request, messages.SUCCESS,
+                             'Thank you for your email confirmation. Now you can login your account.')
+        return redirect("/")
+    else:
+        return redirect(request, "activation_failed.html", {"user": user})
 
-#     def form_valid(self, form):
-#         request = self.request
-#         email = form.cleaned_data.get('email')
-#         password = form.cleaned_data.get('password')
-#         user = authenticate(request, email=email, password=password)
-#         print(user)
-#         if user:
-#             login(request, user)
-#             print(user)
-#             return redirect('/user/')
-#         else:
-#             return redirect('/')
+
+def user_login(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request=request, data=request.POST)
+        print('Hello')
+        print(request.POST)
+
+        uname = request.POST.get('username')
+        upass = request.POST.get('password')
+        user = authenticate(username=uname, password=upass)
+        print(user)
+        if user:
+            print("<><><><>>")
+            login(request, user)
+            return redirect('/user/userread')
+        else:
+            print("??????????????????")
+            messages.info(request, "Email or password error.")
+            return redirect('/')
+    form = AuthenticationForm()
+    return render(request, 'userlogin.html', {'form': form})
 
 
 def user_logout(request):
@@ -77,23 +128,3 @@ def user_logout(request):
 
 #     form = PasswordResetForm()
 #     return render(request, "password_reset.html", {"form": form})
-
-
-def user_login(request):
-    if request.method == 'POST':
-        # form = AuthenticationForm(request=request, data=request.POST)
-        print('Hello')
-        print(request.POST)
-
-        uname = request.POST.get('username')
-        upass = request.POST.get('password')
-        user = authenticate(username=uname, password=upass)
-        print(user)
-        if user is not None:
-            login(request, user)
-            # return redirect('/user/userread')
-        else:
-            messages.info(request, "You are now logged in.")
-            # return redirect('/')
-    form = AuthenticationForm()
-    return render(request, 'userlogin.html', {'form': form})

@@ -35,12 +35,12 @@ class SignUpForm(forms.ModelForm):
                 raise forms.ValidationError("your passwords don't match")
             return password2
 
-        # def save(self, commit=True):
-        #     user = super(SignUpForm, self).save(commit=False)
-        #     user.set_password(self.cleaned_data["password1"])
-        #     if commit:
-        #         user.save()
-        #     return user
+        def save(self, commit=True):
+            user = super(SignUpForm, self).save(commit=False)
+            user.set_password(self.cleaned_data["password1"])
+            if commit:
+                user.save()
+            return user
 
 
 """
@@ -88,28 +88,6 @@ class UserAdminChangeForm(forms.ModelForm):
 class LoginForm(forms.Form):
     email = forms.EmailField(label="Email")
     password = forms.CharField(widget=forms.PasswordInput)
-
-
-# class SignUpForm(UserCreationForm):
-#     # email = forms.EmailField(widget=forms.EmailField(
-#     #     attrs={'class': 'form-control'}))
-#     first_name = forms.CharField(
-#         max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
-#     last_name = forms.CharField(
-#         max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
-
-#     class Meta:
-#         model = User
-#         fields = ['username', 'first_name', 'last_name',
-#                   'email']
-#         labels = {'email': 'Email'}
-
-#     def __init__(self, *args, **kwargs):
-#         super(SignUpForm, self).__init__(*args, **kwargs)
-
-#         self.fields['username'].widget.attrs['class'] = 'form-control'
-#         self.fields['password1'].widget.attrs['class'] = 'form-control'
-#         self.fields['password2'].widget.attrs['class'] = 'form-control'
 
 
 # class ChangePasswordForm(forms.Form):

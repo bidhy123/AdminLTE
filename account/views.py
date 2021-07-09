@@ -1,12 +1,12 @@
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.http import request
-from django.urls import reverse
+from django.http.response import HttpResponse
 from django.shortcuts import render, HttpResponseRedirect, redirect
 from .forms import SignUpForm
 from django.contrib import messages
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import EmailMessage
-#
+from django.core.mail import EmailMessage, send_mail, BadHeaderError
+from django.contrib.auth.tokens import default_token_generator
 from .models import User
 from django.template.loader import render_to_string
 from django.contrib.auth.forms import PasswordResetForm, AuthenticationForm
@@ -45,12 +45,12 @@ def sign_up(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             password = form.cleaned_data["password1"]
-            user = form.save(commit=False)
-            user.set_password(password)
-            user.staff = True
-            # user_added.is_active = True
-            user.save()
-            send_activation_email(user, request)
+            user_added = form.save(commit=False)
+            # user_added.staff = True
+            user_added.active = False
+            user_added.set_password(password)
+            user_added.save()
+            send_activation_email(user_added, request)
             messages.success(request, 'Your Account Created Successfully.')
             return redirect('/')
         else:
@@ -66,7 +66,6 @@ def activate(request, uidb64, token):
         uid = force_text(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
     except Exception as e:
-        print(e)
         user = None
     if user and generate_token.check_token(user, token):
         user.is_email_verified = True
@@ -75,7 +74,7 @@ def activate(request, uidb64, token):
                              'Thank you for your email confirmation. Now you can login your account.')
         return redirect("/")
     else:
-        return redirect(request, "activation_failed.html", {"user": user})
+        return render(request, "activation_failed.html", {"user": user})
 
 
 def user_login(request):
@@ -91,10 +90,11 @@ def user_login(request):
         if user:
             print("<><><><>>")
             login(request, user)
+            messages.info(request, "Login Successfully.")
             return redirect('/user/userread')
         else:
             print("??????????????????")
-            messages.info(request, "Email or password error.")
+            messages.warning(request, "Email or password invalid.")
             return redirect('/')
     form = AuthenticationForm()
     return render(request, 'userlogin.html', {'form': form})
@@ -105,26 +105,40 @@ def user_logout(request):
     return HttpResponseRedirect('/account/login/')
 
 
-# def password_reset(request):
-#     if request.method == "POST":
-#         form = PasswordResetForm(request.POST)
-#         if form.is_valid():
-#             data = form.cleaned_data['email']
-#             associated_users = User.objects.filter(Q(email=data))
-#             if associated_users.exists():
-#                 for user in associated_users:
-#                     subject = "Password Reset Requested"
-#                     email_template_name = ''
-#                     c = {
-#                         'email': user.email,
-#                         'domain': '127.0.0.1:8000',
-#                         'site_name': 'Website',
-#                         "uid": urlsafe_base64_encode(force_bytes(user.pk)),
-#                         "user": user,
-#                         'token': default_token_generator.make_token(user),
-#                         'protocol': 'http',
-#                     }
-#                     email = render_to_string(email_template_name, c)
-
-#     form = PasswordResetForm()
-#     return render(request, "password_reset.html", {"form": form})
+def password_reset_request(request):
+    if request.method == "POST":
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data['email']
+            associated_users = User.objects.filter(Q(email=data))
+            if associated_users.exists():
+                for user in associated_users:
+                    subject = "Password Reset Requested"
+                    email_template_name = ''
+                    c = {
+                        'email': user.email,
+                        'domain': '127.0.0.1:8000',
+                        'site_name': 'website',
+                        "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                        "user": user,
+                        'token': default_token_generator.make_token(user),
+                        'protocol': 'http',
+                    }
+                    email = render_to_string(email_template_name, c)
+                    try:
+                        send_mail(
+                            subject,
+                            email,
+                            'admin@example.com',
+                            [user.email],
+                            fail_silently=False,
+                        )
+                    except BadHeaderError:
+                        return HttpResponse('invalid header found.')
+                    return redirect('../../password_reset/done/')
+    form = PasswordResetForm()
+    return render(
+        request=request,
+        template_name="password_reset.html",
+        context={"form": form},
+    )

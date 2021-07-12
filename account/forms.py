@@ -1,8 +1,9 @@
 from django.db import models
-from account.models import User
+from account.models import User, Profile
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django import forms
+from django.forms import ModelForm
 
 User = get_user_model()
 
@@ -78,8 +79,8 @@ class UserAdminChangeForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['email', 'full_name', 'address',
-                  'password', 'active', 'admin']
+        fields = ('email', 'full_name', 'address',
+                  'password', 'active', 'admin')
 
     def clean_password(self):
         return self.initial['password']
@@ -88,6 +89,20 @@ class UserAdminChangeForm(forms.ModelForm):
 class LoginForm(forms.Form):
     email = forms.EmailField(label="Email")
     password = forms.CharField(widget=forms.PasswordInput)
+
+
+class ImageForm(ModelForm):
+    class Meta:
+        model = Profile
+        fields = ["image"]
+
+        widgets = {
+            "image": forms.FileInput(
+                attrs={
+                    "class": "form-control-file",
+                }
+            ),
+        }
 
 
 # class ChangePasswordForm(forms.Form):

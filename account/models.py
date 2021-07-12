@@ -1,6 +1,7 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, UserManager
+from django.contrib.auth.models import AbstractBaseUser
+from PIL import Image
 # Create your models here.
 
 
@@ -20,7 +21,7 @@ class UserManager(BaseUserManager):
         user_obj.save(using=self._db)
         return user_obj
 
-    def create_staffuser(self, email, full_name=None, address=None, password=None):
+    def create_staffuser(self, email, password=None):
         user = self.create_user(
             email,
             password=password,
@@ -47,9 +48,10 @@ class User(AbstractBaseUser):
     full_name = models.CharField(max_length=200, blank=True, null=True)
     address = models.CharField(max_length=200, blank=True, null=True)
     active = models.BooleanField(default=True)  # can login
-    staff = models.BooleanField(default=True)  # non super user
-    admin = models.BooleanField(default=True)  # super user
+    staff = models.BooleanField(default=False)  # non super user
+    admin = models.BooleanField(default=False)  # super user
     timestamp = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -96,3 +98,21 @@ class User(AbstractBaseUser):
     @property
     def is_active(self):
         return self.active
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    image = models.ImageField(default="default.png", upload_to="profile_pics/")
+
+    def __str__(self):
+        return f"{self.user.full_name} Profile"
+
+    def save(self, *args, **kwargs):
+        super(Profile, self).save(*args, **kwargs)
+
+        img = Image.open(self.image.path)
+
+        if img.height > 200 or img.width > 200:
+            output_size = (200, 200)
+            img.thumbnail(output_size)
+            img.save(self.image.path)

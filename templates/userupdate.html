@@ -7,7 +7,7 @@
             <div class="card-body">
                 <div class="form-group">
                     <label class="col-sm-2 col-form-label">Name:</label>
-                    {{form.name}}
+                    {{form.full_name}}
                 </div>
                 <div class="form-group">
                     <label class="col-sm-2 col-form-label">Address:</label>
@@ -23,7 +23,7 @@
                 </div>
             </div>
             <input type="submit" class="btn btn-success" value="Update">
-            <a href="{% url 'user:userread' %}" class="btn btn-info">Back to Userread</a>
+            <a href="{% url 'account:userread' %}" class="btn btn-info">Back to Userread</a>
         </form>
         {% for message in messages %}
         <div class="alert alert-success alert-dismissible fade show" role="alert">

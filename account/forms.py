@@ -105,6 +105,5 @@ class ImageForm(ModelForm):
         }
 
 
-# class ChangePasswordForm(forms.Form):
-#     new_password = forms.CharField(widget=forms.PasswordInput)
-#     password = forms.CharField(widget=forms.PasswordInput)
+# class password_reset_form(forms.Form):
+#     email = forms.EmailField(widget=forms.EmailInput)

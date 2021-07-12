@@ -35,6 +35,7 @@ class UserManager(BaseUserManager):
             email,
             password=password,
         )
+        user.set_password(password)
         user.staff = True
         user.admin = True
         user.save(using=self._db)
@@ -58,7 +59,7 @@ class User(AbstractBaseUser):
 
     objects = UserManager()
 
-    update_password = True
+    # update_password = True
 
     # def save(self, *args, **kwargs):
     #     if self.admin != "True" and self.update_password:
@@ -102,7 +103,7 @@ class User(AbstractBaseUser):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    image = models.ImageField(default="default.png", upload_to="profile_pics/")
+    image = models.ImageField(default="default.jpg", upload_to="profile_pics/")
 
     def __str__(self):
         return f"{self.user.full_name} Profile"

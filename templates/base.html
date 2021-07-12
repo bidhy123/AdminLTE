@@ -45,7 +45,7 @@
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
     <a href="index3.html" class="brand-link">
-      <img src="{%static 'dist/img/AdminLTELogo.png' %}" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
+      <img src="{{user.profile.image.url}}" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
         style="opacity: 0.8" />
       <span class="brand-text font-weight-light">AdminLTE 3</span>
     </a>
@@ -58,7 +58,7 @@
           <img src="{{user.profile.image.url}}" class="img-circle elevation-2" alt="User Image" />
         </div>
         <div class="info">
-          <a href="{% url 'account:profile' %" class="d-block">{{user.full_name}}</a>
+          <a href="{% url 'account:profile' %}" class="d-block">{{user.email}}</a>
         </div>
       </div>
 
@@ -87,7 +87,7 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="{% url 'account:useradd' %}" class="nav-link">
+                <a href="{% url 'user:useradd' %}" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Add User</p>
                 </a>
@@ -95,7 +95,7 @@
             </ul>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="{% url 'account:userread' %}" class="nav-link">
+                <a href="{% url 'user:userread' %}" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>View User</p>
                 </a>

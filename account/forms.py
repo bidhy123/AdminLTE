@@ -25,6 +25,7 @@ class SignUpForm(forms.ModelForm):
             email = self.cleaned_data.get('email')
             qs = User.objects.filter(email=email)
             if qs.exists():
+                print('email invalid')
                 raise forms.ValidationError('email is taken')
             return email
 
@@ -33,6 +34,7 @@ class SignUpForm(forms.ModelForm):
             password2 = self.cleaned_data.get('Password2')
 
             if password1 and password2 and password1 != password2:
+                print('email invalid')
                 raise forms.ValidationError("your passwords don't match")
             return password2
 
@@ -91,7 +93,7 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput)
 
 
-class ImageForm(ModelForm):
+class UserImageForm(ModelForm):
     class Meta:
         model = Profile
         fields = ["image"]
@@ -107,3 +109,29 @@ class ImageForm(ModelForm):
 
 # class password_reset_form(forms.Form):
 #     email = forms.EmailField(widget=forms.EmailInput)
+
+class UserAddForm(forms.ModelForm):
+    full_name = forms.CharField()
+    address = forms.CharField()
+    email = forms.EmailField()
+    password = forms.CharField(widget=forms.PasswordInput)
+
+    class Meta:
+        model = User
+        fields = ('email', 'full_name', 'address',)
+
+        def clean_email(self):  # Verify email is available.
+
+            email = self.cleaned_data.get('email')
+            qs = User.objects.filter(email=email)
+            if qs.exists():
+                print('email invalid')
+                raise forms.ValidationError('email is taken')
+            return email
+
+        def save(self, commit=True):
+            user = super(UserAddForm, self).save(commit=False)
+            user.set_password(self.cleaned_data["password"])
+            if commit:
+                user.save()
+            return user

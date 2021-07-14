@@ -2,10 +2,12 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from .models import Category
 from .forms import CategoryForm
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
 
+@login_required(login_url="/")
 def Categoryadd(request):
     if request.method == 'POST':
         form = CategoryForm(request.POST)
@@ -24,11 +26,13 @@ def Categoryadd(request):
     return render(request, 'categoryadd.html', {'form': form})
 
 
+@login_required(login_url="/")
 def categoryread(request):
     category = Category.objects.all()
     return render(request, 'categoryread.html', {'category': category})
 
 
+@login_required(login_url="/")
 def category_delete(request, id):
     if request.method == 'POST':
         delt = Category.objects.get(pk=id)
@@ -36,6 +40,7 @@ def category_delete(request, id):
         return HttpResponseRedirect("/category/categoryread")
 
 
+@login_required(login_url="/")
 def category_update(request, id):
     if request.method == 'POST':
         updt = Category.objects.get(pk=id)

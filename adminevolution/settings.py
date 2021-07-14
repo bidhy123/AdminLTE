@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'verify_email.apps.VerifyEmailConfig',
-    'user',
     'product',
     'category',
     'account',
@@ -145,7 +144,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-LOGIN_URL = "../accounts/login/"
+LOGIN_URL = "../account/login/"
 
 EMAIL_FROM_USER = "bidhyapokhrel123@gmail.com"
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

@@ -12,7 +12,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Profile</title>
+    <title>Change Password</title>
     <style>
         img {
             display: block;
@@ -25,33 +25,28 @@
 
 <body>
     <nav class="navbar navbar-light" style="background-color: #e3f2fd">
-        <a class="navbar-brand" href="{% url 'account:useradd' %}"> Home </a>
+        <a class="navbar-brand" href=""> Home </a>
     </nav>
-    <div class="container mt-5 mb-4">
+    <div class="container mt-4 mb-4">
         <div class="row">
-            <div class="col-md-4 mx-auto">
+            <div class="col-md-6 mx-auto">
                 <div class="card bg-white text-secondary align-items-center text-center">
-                    <div class="m-b-25">
-                        <img src="{{user.profile.image.url}}" class="img-radius" alt="User-Profile-Image" />
-                    </div>
-
+                    <img src="{%static 'dist/img/change.png' %}" alt="forgotpass" />
                     <div class="card-body">
-                        <h2 class="card-title .bg-primary account-heading">
-                            {{ user.full_name }}
-                        </h2>
-                        <p class="card-text text-secondary">{{ user.email }}</p>
-                        <p class="card-text text-secondary">{{ user.address }}</p>
-                        <form method="POST" enctype="multipart/form-data">
-                            {% csrf_token %} {{form.as_p}}
-                            <input class="btn btn-primary" type="submit" value="Upload Image" />
-                        </form>
-                        <p class="card-text mt-3"></p>
-
-                        {% for message in messages %}
+                        <h5 class="card-title .bg-primary">Change password</h5>
+                        <p class="card-text">
+                            {% for message in messages %}
                         <div class="alert alert-{{message.tags}} mt-2" role="alert">
                             {{message}}
                         </div>
                         {% endfor %}
+                        </p>
+                        <form method="POST" novalidate>
+                            {% csrf_token %} {{form|crispy}}
+                            <input class="btn btn-primary" type="submit" value="Confirm" />
+                        </form>
+                        <p class="card-text mt-3">Get back to profile.</p>
+                        <a href="{% url 'account:profile' %}" class="btn btn-danger">Profile</a>
                     </div>
                 </div>
             </div>
@@ -71,24 +66,3 @@
 </body>
 
 </html>
-
-
-
-
-<!-- {% load crispy_forms_tags %}
-
-<div class="content-section">
-    <div class="media">
-        <img class="rounded-circle account-img" src="{{ user.profile.image.url }}">
-        <div class="media-body">
-            <form method="POST">
-                {% csrf_token %}
-                {{form}}
-                <input type="submit" value="upload image">
-            </form>
-            <h2 class="account-heading">{{ user.full_name }}</h2>
-            <p class="text-secondary">{{ user.email }}</p>
-        </div>
-    </div>
-    <!-- FORM HERE -->
-</div> -->

@@ -1,25 +1,24 @@
-from django.contrib.auth.decorators import login_required
-from .forms import SignUpForm
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage, send_mail, BadHeaderError
 from django.contrib.auth import authenticate, login, logout, get_user_model, update_session_auth_hash
-from django.http import request
 from django.http.response import HttpResponse
 from django.shortcuts import render, HttpResponseRedirect, redirect
-from .forms import SignUpForm, ImageForm
+from .forms import SignUpForm, UserImageForm, UserAddForm
 from django.contrib import messages
 from django.contrib.sites.shortcuts import get_current_site
 from .models import User
 from django.template.loader import render_to_string
-from django.contrib.auth.forms import PasswordResetForm, AuthenticationForm
+from django.contrib.auth.forms import PasswordResetForm, AuthenticationForm, PasswordChangeForm
 from django.db.models.query_utils import Q
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str, force_text, DjangoUnicodeDecodeError
 from .utils import generate_token
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+
 UserModel = get_user_model()
 
 # Create your views here.
@@ -52,7 +51,7 @@ def sign_up(request):
             password = form.cleaned_data["password1"]
             user_added = form.save(commit=False)
             # user_added.staff = True
-            # user_added.active = False
+            user_added.active = False
             user_added.set_password(password)
             user_added.save()
             send_activation_email(user_added, request)
@@ -96,7 +95,7 @@ def user_login(request):
             print("<><><><>>")
             login(request, user)
             messages.info(request, "Login Successfully.")
-            return redirect('user/userread')
+            return redirect('account:userread')
         else:
             print("??????????????????")
             messages.warning(request, "Email or password invalid.")
@@ -105,9 +104,88 @@ def user_login(request):
     return render(request, 'userlogin.html', {'form': form})
 
 
+# @login_required(login_url="/")
+# def useradd(request):
+#     if request.method == 'POST':
+#         form = SignUpForm(request.POST)
+#         if form.is_valid():
+#             User.full_name = form.cleaned_data['name']
+#             User.address = form.cleaned_data['address']
+#             User.email = form.cleaned_data['email']
+#             User.password = form.cleaned_data['password1']
+#             useradded = form.save(commit=False)
+#             useradded.save()
+#             form = SignUpForm()
+#             messages.add_message(request, messages.SUCCESS,
+#                                  'your Account has been registered Successfully.')
+#         else:
+#             print('form is not valid')
+
+#     else:
+#         form = SignUpForm()
+#     return render(request, 'account/useradd.html', {'form': form})
+
+@login_required(login_url="/")
+def useradd(request):
+    if request.method == 'POST':
+        print(request.POST)
+        print("<><>><<>")
+        form = UserAddForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data["full_name"]
+            address = form.cleaned_data["address"]
+            email = form.cleaned_data["email"]
+            password = form.cleaned_data["password"]
+            user = User(email=email,
+                        full_name=name,
+                        address=address,
+                        password=password,
+                        )
+            user.set_password(password)
+            user.save()
+            messages.success(request, 'Your Account Created Successfully.')
+        else:
+            messages.error(request, "registration failed, try again.")
+    else:
+        form = UserAddForm()
+    return render(request, 'account/useradd.html', {'form': form})
+
+
+@login_required(login_url="/")
+def userread(request):
+    user = User.objects.all()
+    return render(request, 'account/userread.html', {'user': user})
+
+
+@login_required(login_url="/")
+def user_update(request, id):
+    if request.method == 'POST':
+        updt = User.objects.get(pk=id)
+        form = SignUpForm(request.POST, instance=updt)
+        if form.is_valid():
+            form.save()
+        else:
+            print('invalid')
+    updt = User.objects.get(pk=id)
+    form = SignUpForm(instance=updt)
+    messages.add_message(request, messages.SUCCESS,
+                         'Your Account Has Been Updated.')
+    return render(request, 'account/userupdate.html', {'form': form})
+
+
+@login_required(login_url="/")
+def user_delete(request, id):
+    if request.method == 'POST':
+        delt = User.objects.get(pk=id)
+        delt.delete()
+        messages.add_message(request, messages.SUCCESS,
+                             'Your Account Has Been Deleted.')
+        return redirect("/userread")
+
+
 def profile(request):
     if request.method == "POST":
-        form = ImageForm(
+        form = UserImageForm(
             request.POST, request.FILES, instance=request.user.profile
         )
         if form.is_valid():
@@ -117,13 +195,8 @@ def profile(request):
         else:
             messages.error(request, "Could not upload image, try again.")
     else:
-        form = ImageForm()
+        form = UserImageForm()
     return render(request, "account/profile.html", {"form": form})
-
-
-def user_logout(request):
-    logout(request)
-    return HttpResponseRedirect('/account/login/')
 
 
 def password_reset_request(request):
@@ -165,106 +238,18 @@ def password_reset_request(request):
     )
 
 
-# def user_change_pass(request):
-#     if request.method == "POST":
-#         fm = PasswordChangeForm(user=request.user, data=request.POST)
-#         if fm.is_valid():
-#             fm.save()
-#             messages.success(request, "Password changed successfully.")
-#             update_session_auth_hash(request, fm.user)
-#     else:
-#         fm = PasswordChangeForm(user=request.user)
-#     return render(request, "accounts/password/changepass.html", {"form": fm}
-
-# Create your views here.
+def change_pass(request):
+    if request.method == "POST":
+        fm = PasswordChangeForm(user=request.user, data=request.POST)
+        if fm.is_valid():
+            fm.save()
+            messages.success(request, "Password changed successfully.")
+            update_session_auth_hash(request, fm.user)
+    else:
+        fm = PasswordChangeForm(user=request.user)
+    return render(request, "account/changepass.html", {"form": fm})
 
 
-# @login_required(login_url="/")
-# def useradd(request):
-#     if request.method == 'POST':
-#         form = SignUpForm(request.POST)
-#         print('hello')
-#         if form.is_valid():
-#             # useradded = form.save(commit=False)
-#             # useradded.save()
-#             # form = SignUpForm()
-#             User.save()
-
-#             messages.add_message(request, messages.SUCCESS,
-#                                  'your Account has been registered Successfully.')
-#         else:
-#             print('form is not valid')
-
-#     else:
-#         form = SignUpForm()
-#     return render(request, 'useradd.html', {'form': form})
-
-# def useradd(request):
-#     if request.method == "POST":
-#         fm = SignUpForm(request.POST)
-#         import pdb
-#         pdb.set_trace()
-#         if fm.is_valid():
-#             Name = fm.cleaned_data["full_name"]
-#             Address = fm.cleaned_data["address"]
-#             Email = fm.cleaned_data["email"]
-#             Password = fm.cleaned_data["password"]
-#             if len(Name) < 4:
-#                 raise ValidationError(
-#                     "Invalid Name, enter a valid name and try again."
-#                 )
-#             if len(Address) < 4:
-#                 raise ValidationError(
-#                     "Invalid Address, enter a valid address and try again."
-#                 )
-#             if len(Email) < 10:
-#                 raise ValidationError(
-#                     "Invalid Name, enter a valid name and try again."
-#                 )
-#             usr = User(
-#                 email=Email,
-#                 full_name=Name,
-#                 address=Address,
-#                 password=Password,
-#             )
-#             usr.set_password(Password)
-#             usr.save()
-#             messages.add_message(request, messages.SUCCESS,
-#                                  "User details updated successfully.")
-#         else:
-#             messages.error(request, "Update Failed, try again.")
-#     else:
-#         fm = SignUpForm()
-#     return render(request, "useradd.html", {"form": fm})
-
-
-# @login_required(login_url="/")
-# def userread(request):
-#     user = User.objects.all()
-#     return render(request, 'userread.html', {'user': user})
-
-
-# @login_required(login_url="/")
-# def user_update(request, id):
-#     if request.method == 'POST':
-#         updt = User.objects.get(pk=id)
-#         form = SignUpForm(request.POST, instance=updt)
-#         if form.is_valid():
-#             form.save()
-#         else:
-#             print('invalid')
-#     updt = User.objects.get(pk=id)
-#     form = SignUpForm(instance=updt)
-#     messages.add_message(request, messages.SUCCESS,
-#                          'Your Account Has Been Updated.')
-#     return render(request, 'userupdate.html', {'form': form})
-
-
-# @login_required(login_url="/")
-# def user_delete(request, id):
-#     if request.method == 'POST':
-#         delt = User.objects.get(pk=id)
-#         delt.delete()
-#         messages.add_message(request, messages.SUCCESS,
-#                              'Your Account Has Been Deleted.')
-#         return HttpResponseRedirect("/account/userread")
+def user_logout(request):
+    logout(request)
+    return HttpResponseRedirect('/')

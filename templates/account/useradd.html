@@ -51,12 +51,12 @@
                 </div>
                 <!-- /.card-header -->
                 <!-- form start -->
-                <form method="POST" action="{% url 'user:useradd' %}">
+                <form method="POST" action="{% url 'account:useradd' %}">
                   {% csrf_token %}
                   <div class="card-body">
                     <div class="form-group">
                       <label class="col-sm-2 col-form-label">Name:</label>
-                      {{form.name}}
+                      {{form.full_name}}
                     </div>
                     <div class="form-group">
                       <label class="col-sm-2 col-form-label">Address:</label>

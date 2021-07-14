@@ -52,7 +52,6 @@ class User(AbstractBaseUser):
     staff = models.BooleanField(default=False)  # non super user
     admin = models.BooleanField(default=False)  # super user
     timestamp = models.DateTimeField(auto_now_add=True)
-    image = models.ImageField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
